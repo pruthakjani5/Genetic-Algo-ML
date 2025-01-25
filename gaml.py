@@ -328,29 +328,6 @@ model_configs = {
         "bounds": [(1, 50), (1, 100), (1, 5)]
     }
 }
-
-# def load_data(name):
-#     """Load dataset based on name with extended options"""
-#     if name == "Iris":
-#         data = load_iris()
-#     elif name == "Wine":
-#         data = load_wine()
-#     elif name == "Digits":
-#         data = load_digits()
-#     elif name == "Breast Cancer":
-#         data = load_breast_cancer()
-#     elif name == "Diabetes":
-#         data = load_diabetes()
-#     else:  # Custom (Synthetic)
-#         X, y = make_classification(
-#             n_samples=500, 
-#             n_features=10, 
-#             n_informative=5, 
-#             random_state=42
-#         )
-#         return X, y, [f"Feature_{i}" for i in range(10)]
-    
-#     return data.data, data.target, data.feature_names
 def load_data(name):
     """Load dataset based on name with extended options"""
     if name == "Upload CSV":
@@ -850,8 +827,15 @@ with col2:
                         # Feature Importance
                         if hasattr(best_model, 'feature_importances_'):
                             importances = best_model.feature_importances_
+                            
+                            # Generate feature names if not available
+                            if not hasattr(st.session_state, 'feature_names') or dataset_name == "Upload CSV":
+                                feature_names = [f"Feature_{i+1}" for i in range(len(importances))]
+                            else:
+                                feature_names = st.session_state.feature_names
+                                
                             feature_imp = pd.DataFrame({
-                                'Feature': st.session_state.feature_names,
+                                'Feature': feature_names[:len(importances)],  # Ensure matching lengths
                                 'Importance': importances
                             }).sort_values('Importance', ascending=False)
                             
