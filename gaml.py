@@ -23,46 +23,8 @@ import matplotlib.pyplot as plt
 st.set_page_config(
     page_title="ML Hyperparameter Optimization",
     page_icon="🧬",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
-
-# Custom CSS
-st.markdown("""
-<style>
-    .main {
-        padding: 2rem;
-    }
-    .stButton>button {
-        width: 100%;
-    }
-    .reportview-container .main .block-container {
-        padding-top: 2rem;
-    }
-    div.stButton > button:first-child {
-        background-color: #0066cc;
-        color: white;
-    }
-    div.stButton > button:hover {
-        background-color: #0052a3;
-        color: white;
-    }
-    .info-box {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 1rem 0;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# # Create multipage navigation
-# PAGES = {
-#     "Home": "home",
-#     "Optimizer": "optimizer",
-#     "Documentation": "documentation",
-#     "About": "about"
-# }
 
 class GeneticAlgorithm:
     def __init__(self, objective_function, num_variables, variable_bounds,
@@ -210,48 +172,6 @@ class GeneticAlgorithm:
         progress_bar.empty()
         status_text.empty()
         return best_solution, best_fitness, history
-
-
-# def load_data(name):
-#     if name == "Iris":
-#         data = load_iris()
-#     elif name == "Wine":
-#         data = load_wine()
-#     elif name == "Digits":
-#         data = load_digits()
-#     else:  # Custom (Synthetic)
-#         X, y = make_classification(n_samples=500, n_features=10, n_informative=5, random_state=42)
-#         return X, y, range(10)  # feature names for synthetic data
-#     return data.data, data.target, data.feature_names
-
-# def get_parameter_bounds(model_name):
-#     if model_name == "Decision Tree":
-#         return [(2, 20), (1, 10)]
-#     elif model_name == "Random Forest":
-#         return [(10, 200), (1, 10)]
-#     else:  # SVM
-#         return [(0.1, 10), (0.01, 1)]
-
-# def create_model(model_name, params):
-#     if model_name == "Decision Tree":
-#         return DecisionTreeClassifier(
-#             min_samples_split=max(int(params[0]), 2),
-#             max_depth=int(params[1]) if params[1] > 0 else None
-#         )
-#     elif model_name == "Random Forest":
-#         return RandomForestClassifier(
-#             n_estimators=max(int(params[0]), 1),
-#             max_depth=int(params[1]) if params[1] > 0 else None
-#         )
-#     else:  # SVM
-#         return SVC(
-#             C=max(params[0], 0.1),
-#             gamma=max(params[1], 0.01)
-#         )
-
-# Main Application UI
-# st.title("🧬 Genetic Algorithm for ML Hyperparameter Optimization")
-
 # Expanded dataset options
 dataset_options = {
     "Iris": "Classic flower classification",
@@ -328,6 +248,38 @@ model_configs = {
         "bounds": [(1, 50), (1, 100), (1, 5)]
     }
 }
+
+
+# Custom CSS
+st.markdown("""
+<style>
+    .main {
+        padding: 2rem;
+    }
+    .stButton>button {
+        width: 100%;
+    }
+    .reportview-container .main .block-container {
+        padding-top: 2rem;
+    }
+    div.stButton > button:first-child {
+        background-color: #0066cc;
+        color: white;
+    }
+    div.stButton > button:hover {
+        background-color: #0052a3;
+        color: white;
+    }
+    .info-box {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 def load_data(name):
     """Load dataset based on name with extended options"""
     if name == "Upload CSV":
