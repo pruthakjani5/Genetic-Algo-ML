@@ -23,15 +23,6 @@ Check out the live app: [Genetic Algo ML](https://genetic-algo-ml.streamlit.app/
 
 ---
 
-## 📂 Project Structure
-
-```
-Genetic-Algo-ML/
-├── gaml.py               # Main Streamlit application
-├── requirements.txt      # Dependencies and libraries
-├── README.md             # Project documentation
-```
-
 ## 🛠️ Installation
 
 Follow these steps to get started:
