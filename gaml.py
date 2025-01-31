@@ -715,29 +715,30 @@ with col2:
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    # Optimization History
-                    fig = px.line(
-                        x=range(len(history)),
+                    # Optimization History Plot
+                    fig1 = px.line(
+                        x=list(range(len(history))),
                         y=history,
                         labels={'x': 'Generation', 'y': 'Best Fitness'},
                         title='Fitness Evolution'
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig1, use_container_width=True)
                 
                 with col2:
-                    # Confusion Matrix
+                    # Confusion Matrix Plot
                     cm = confusion_matrix(st.session_state.y_test, final_predictions)
-                    fig = px.imshow(
+                    fig2 = px.imshow(
                         cm,
                         labels=dict(x="Predicted", y="Actual"),
                         title="Confusion Matrix",
                         color_continuous_scale="Viridis"
                     )
-                    st.plotly_chart(fig, use_container_width=True)
-
-                # Additional Visualizations in a separate container
+                    # Optionally adjust dimensions for better rendering
+                    fig2.update_layout(width=500, height=500)
+                    st.plotly_chart(fig2, use_container_width=True)
+                
                 st.subheader("📊 Additional Visualizations and Metrics")
-                if 'data_loaded' in st.session_state and st.session_state.data_loaded:
+                if st.session_state.get('data_loaded', False):
                     viz_tab1, viz_tab2, viz_tab3, viz_tab4 = st.tabs([
                         "Learning Curves", 
                         "Feature Importance", 
@@ -752,58 +753,57 @@ with col2:
                             cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10)
                         )
                         
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(
+                        fig3 = go.Figure()
+                        fig3.add_trace(go.Scatter(
                             x=train_sizes, 
-                            y=train_scores.mean(axis=1),
+                            y=np.mean(train_scores, axis=1),
                             mode='lines+markers', 
                             name='Training Score',
                             line=dict(color='blue')
                         ))
-                        fig.add_trace(go.Scatter(
+                        fig3.add_trace(go.Scatter(
                             x=train_sizes, 
-                            y=test_scores.mean(axis=1),
+                            y=np.mean(test_scores, axis=1),
                             mode='lines+markers', 
                             name='Cross-Validation Score',
                             line=dict(color='red')
                         ))
-                        fig.update_layout(
+                        fig3.update_layout(
                             title='Learning Curves',
                             xaxis_title='Training Examples',
                             yaxis_title='Score',
                             template='plotly_white'
                         )
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig3, use_container_width=True)
                     
                     with viz_tab2:
-                        # Feature Importance
+                        # Feature Importance Plot
                         if hasattr(best_model, 'feature_importances_'):
                             importances = best_model.feature_importances_
-                            
-                            # Generate feature names if not available
-                            if not hasattr(st.session_state, 'feature_names') or dataset_name == "Upload CSV":
+                            # Determine feature names
+                            if not st.session_state.get('feature_names') or dataset_name == "Upload CSV":
                                 feature_names = [f"Feature_{i+1}" for i in range(len(importances))]
                             else:
                                 feature_names = st.session_state.feature_names
-                                
+                            
                             feature_imp = pd.DataFrame({
-                                'Feature': feature_names[:len(importances)],  # Ensure matching lengths
+                                'Feature': feature_names[:len(importances)],
                                 'Importance': importances
                             }).sort_values('Importance', ascending=False)
                             
-                            fig = px.bar(
+                            fig4 = px.bar(
                                 feature_imp,
                                 x='Feature',
                                 y='Importance',
                                 title='Feature Importance',
                                 template='plotly_white'
                             )
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig4, use_container_width=True)
                         else:
                             st.info("Feature importance not available for this model type.")
                     
                     with viz_tab3:
-                        # Model Comparison
+                        # Model Comparison Plot
                         models = {
                             'Decision Tree': DecisionTreeClassifier(),
                             'Random Forest': RandomForestClassifier(),
@@ -812,8 +812,8 @@ with col2:
                         }
                         
                         comparison_scores = []
-                        for model_type, model in models.items():
-                            scores = cross_val_score(model, st.session_state.X_train, st.session_state.y_train, cv=5)
+                        for model_type, model_obj in models.items():
+                            scores = cross_val_score(model_obj, st.session_state.X_train, st.session_state.y_train, cv=5)
                             comparison_scores.append({
                                 'Model': model_type,
                                 'Mean Score': scores.mean(),
@@ -821,7 +821,7 @@ with col2:
                             })
                         
                         comparison_df = pd.DataFrame(comparison_scores)
-                        fig = px.bar(
+                        fig5 = px.bar(
                             comparison_df,
                             x='Model',
                             y='Mean Score',
@@ -829,10 +829,10 @@ with col2:
                             title='Model Comparison',
                             template='plotly_white'
                         )
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig5, use_container_width=True)
                     
                     with viz_tab4:
-                        # Performance Metrics
+                        # Additional Performance Metrics
                         metric_col1, metric_col2, metric_col3 = st.columns(3)
                         
                         with metric_col1:
@@ -845,34 +845,27 @@ with col2:
                             st.metric("F1 Score", f"{f1:.4f}")
                         
                         with metric_col2:
-                            try:
-                                if hasattr(best_model, 'predict_proba'):
-                                    y_proba = best_model.predict_proba(st.session_state.X_test)
-                                    log_loss_score = log_loss(st.session_state.y_test, y_proba)
-                                    st.metric("Log Loss", f"{log_loss_score:.4f}")
+                            if hasattr(best_model, 'predict_proba'):
+                                y_proba = best_model.predict_proba(st.session_state.X_test)
+                                log_loss_score = log_loss(st.session_state.y_test, y_proba)
+                                st.metric("Log Loss", f"{log_loss_score:.4f}")
                                 
-                                # For ROC AUC, try to compute if possible
                                 try:
-                                    if hasattr(best_model, 'predict_proba'):
-                                        y_proba = best_model.predict_proba(st.session_state.X_test)
-                                        if len(np.unique(st.session_state.y_test)) == 2:
-                                            roc_auc = roc_auc_score(st.session_state.y_test, y_proba[:, 1])
-                                        else:
-                                            roc_auc = roc_auc_score(st.session_state.y_test, y_proba, multi_class='ovr')
-                                        st.metric("ROC AUC", f"{roc_auc:.4f}")
+                                    if len(np.unique(st.session_state.y_test)) == 2:
+                                        roc_auc = roc_auc_score(st.session_state.y_test, y_proba[:, 1])
                                     else:
-                                        st.info("ROC AUC not available for this model type.")
-                                except Exception as e:
-                                    st.info("ROC AUC calculation not possible with current configuration.")
-                            except Exception as e:
-                                st.info("Some metrics not available for this model type.")
+                                        roc_auc = roc_auc_score(st.session_state.y_test, y_proba, multi_class='ovr')
+                                    st.metric("ROC AUC", f"{roc_auc:.4f}")
+                                except Exception:
+                                    st.info("ROC AUC calculation not possible.")
+                            else:
+                                st.info("ROC AUC not available for this model type.")
                         
                         with metric_col3:
                             kappa = cohen_kappa_score(st.session_state.y_test, final_predictions)
                             mcc = matthews_corrcoef(st.session_state.y_test, final_predictions)
                             st.metric("Cohen's Kappa", f"{kappa:.4f}")
                             st.metric("Matthews Correlation", f"{mcc:.4f}")
-
 
 # Footer with better styling
 st.markdown("---")
